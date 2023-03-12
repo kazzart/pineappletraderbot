@@ -1,0 +1,16 @@
+version: "3"
+services:
+  pineappletraderbot:
+    build: .
+    environment:
+      - DELAY_STR=600
+      - ADMIN_DB_CONNECTION_STRING=postgresql+psycopg2://postgres:password@postgres:5432/db
+
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_DB=db
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres
+    ports:
+      - 5432:5432
