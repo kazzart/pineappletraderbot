@@ -13,33 +13,14 @@ class MyExceptionHandler(ExceptionHandler):
         return True
 
 
-class NoTelegramTokenException(Exception):
-    def __init__(self, message='No telegram token'):
-        self.message = message
-        super().__init__(self.message)
-
-
-class NoTelegramLogTokenException(Exception):
-    def __init__(self, message='No telegram token'):
-        self.message = message
-
-        super().__init__(self.message)
-
-
-class NoAdminIdException(Exception):
-    def __init__(self, message='No admin id'):
+class NoEnvironmentVariable(Exception):
+    def __init__(self, message='No environment variable'):
         self.message = message
         super().__init__(self.message)
 
 
 class NoTinkoffTokenException(Exception):
     def __init__(self, message='No tinkoff token'):
-        self.message = message
-        super().__init__(self.message)
-
-
-class NoDelay(Exception):
-    def __init__(self, message='No delay'):
         self.message = message
         super().__init__(self.message)
 

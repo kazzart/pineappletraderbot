@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from telegram_bot import TelegramBot
 from telegram_logger_bot import TelegramLoggerBot
 import serializer
-import exceptions
+from exceptions import MyExceptionHandler, NoEnvironmentVariable
 
 
 if __name__ == "__main__":
@@ -17,25 +17,29 @@ if __name__ == "__main__":
     ADMIN_TINKOFF_TOKEN: str | None = os.getenv('ADMIN_TINKOFF_TOKEN')
     DELAY: int
     DELAY_STR: str | None = os.getenv('DELAY_STR')
+    ADMIN_DB_CONNECTION_STRING: str | None = os.getenv(
+        'ADMIN_DB_CONNECTION_STRING')
     logger: TelegramLoggerBot
-    exception_handler: exceptions.MyExceptionHandler
+    exception_handler: MyExceptionHandler
     if TOKEN is None:
-        raise exceptions.NoTelegramTokenException()
+        raise NoEnvironmentVariable('No telegram bot token')
     if LOG_TOKEN is None:
-        raise exceptions.NoTelegramLogTokenException()
+        raise NoEnvironmentVariable('No telegram logger bot token')
     if ADMIN_ID_STR is None:
-        raise exceptions.NoAdminIdException()
+        raise NoEnvironmentVariable('No admin id')
     if ADMIN_TINKOFF_TOKEN is None:
-        raise exceptions.NoTinkoffTokenException()
+        raise NoEnvironmentVariable('No admin tinkoff token')
     if DELAY_STR is None:
-        raise exceptions.NoDelay()
+        raise NoEnvironmentVariable('No delay')
+    if ADMIN_DB_CONNECTION_STRING is None:
+        raise NoEnvironmentVariable('No admin db connection string')
 
     ADMIN_ID = int(ADMIN_ID_STR)
 
     DELAY = int(DELAY_STR)
 
     logger = TelegramLoggerBot(LOG_TOKEN, BASE_URL)
-    exception_handler = exceptions.MyExceptionHandler(ADMIN_ID, logger)
+    exception_handler = MyExceptionHandler(ADMIN_ID, logger)
     bot = TelegramBot(TOKEN, ADMIN_ID, ADMIN_TINKOFF_TOKEN,
                       DELAY, logger, exception_handler)
     bot.run()
