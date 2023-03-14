@@ -114,14 +114,33 @@ class TelegramBot:
                 self.api.send_message(
                     idx, 'Только админ может запустить проверки')
 
+        def handle_set_tinkoff_token(message: Message, idx: int, admin_idx: int):
+            self.clients[idx].tinkoff_token = message.text
+            self.api.send_message(
+                idx, 'Поздравляю с получением роли модератора')
+            self.api.send_message(
+                admin_idx, f'Пользователь с id \'{idx}\' теперь модератор')
+
         def handle_add_moder(message: Message):
             idx: int = message.from_user.id
+            if message.text is not None:
+                try:
+                    self.api.send_message(
+                        int(message.text), 'Введите свой Tinkoff token')
+                    self.api.register_next_step_handler_by_chat_id(
+                        int(message.text), handle_set_tinkoff_token, int(message.text), idx)
+                except Exception:
+                    self.api.send_message(idx, 'Введен неверный токен')
+                    self.api.send_message(
+                        int(message.text), 'Введен неверный токен')
+            else:
+                self.api.send_message(idx, 'Не вышло добавить модератора')
 
         @self.api.message_handler(commands=['addmoder'])
         def add_moder(message):
             idx: int = message.from_user.id
             self.api.send_message(idx, 'Введите id нового модератора')
-            self.api.register_next_step_handler(message, handle_bounds)
+            self.api.register_next_step_handler(message, handle_add_moder)
             figi: str | None = self.clients[idx].get_figi_for_ticker('SiH3')
             futures = self.clients[idx].get_last_price(figi)
             print(futures)
