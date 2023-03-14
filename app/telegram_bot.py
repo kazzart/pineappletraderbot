@@ -1,6 +1,7 @@
 from typing import List
 
 import telebot
+from telebot.types import Message
 import threading
 
 from telegram_bot_client import TelegramBotClient
@@ -55,24 +56,37 @@ class TelegramBot:
             del self.clients[idx]
             self.api.send_message(idx, 'Пока(')
 
+        def handle_ticker_pair(message: Message):
+            idx: int = message.from_user.id
+            if message.text is not None:
+                self.clients[idx].set_pair(message.text.split())
+                self.api.send_message(idx, 'Пара тикеров установлена')
+            else:
+                self.api.send_message(
+                    idx, 'Не получилось установить пару тикеров')
+
         @self.api.message_handler(commands=['setpair'])
         def set_pair(message):
             idx: int = message.from_user.id
-            pair = extract_arg(message.text)
-            self.clients[idx].set_pair(pair)
+            self.api.send_message(idx, 'Введи пару тикеров через пробел')
+            self.api.register_next_step_handler(message, handle_ticker_pair)
+
+        def handle_bounds(message: Message):
+            idx: int = message.from_user.id
+            if message.text is not None:
+                first_bound, second_bound = message.text.split()
+                self.clients[idx].set_bounds(
+                    float(first_bound), float(second_bound))
+                self.api.send_message(idx, 'Границы установлены')
+            else:
+                self.api.send_message(
+                    idx, 'Не получилось установить границы')
 
         @self.api.message_handler(commands=['setbounds'])
         def set_bounds(message):
             idx: int = message.from_user.id
-            number_of_args = 2
-            bounds = extract_arg(message.text, number_of_args)
-            if bounds is not None:
-                self.clients[idx].set_bounds(
-                    float(bounds[0]), float(bounds[1]))
-                self.api.send_message(idx, 'Границы установленны')
-            else:
-                self.api.send_message(
-                    idx, f'Нужно указать {number_of_args} аргумента')
+            self.api.send_message(idx, 'Введите границы отслеживания')
+            self.api.register_next_step_handler(message, handle_bounds)
 
         @self.api.message_handler(commands=['getdifference'])
         def get_difference(message):
