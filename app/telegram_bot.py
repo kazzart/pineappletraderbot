@@ -110,7 +110,6 @@ class TelegramBot:
                 self.thread.start()
                 self.api.send_message(
                     idx, f'Начинаю чекать инфу раз в {self.delay / 60:.1f} минут')
-                checking = True
             else:
                 self.api.send_message(
                     idx, 'Только админ может запустить проверки')
