@@ -134,6 +134,8 @@ class TelegramBotClient:
     def set_pair(self, tickers: List[str] | None) -> None:
         if tickers is not None:
             self.pair = [tickers[0], tickers[1]]
+        else:
+            raise exceptions.NoTicker('Can\'t set pair')
 
     def set_bounds(self, first_bound: float, second_bound: float) -> None:
         self.bounds = [min(first_bound, second_bound),
