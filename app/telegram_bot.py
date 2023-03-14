@@ -74,10 +74,15 @@ class TelegramBot:
         def handle_bounds(message: Message):
             idx: int = message.from_user.id
             if message.text is not None:
-                first_bound, second_bound = message.text.split()
-                self.clients[idx].set_bounds(
-                    float(first_bound), float(second_bound))
-                self.api.send_message(idx, 'Границы установлены')
+                try:
+                    first_bound, second_bound = message.text.split()
+                    self.clients[idx].set_bounds(
+                        float(first_bound), float(second_bound))
+                    self.api.send_message(idx, 'Границы установлены')
+                except ValueError as ex:
+                    print(ex.__class__)
+                    self.api.send_message(
+                        idx, 'Введены некорректные значения')
             else:
                 self.api.send_message(
                     idx, 'Не получилось установить границы')
