@@ -97,7 +97,7 @@ class TelegramBot:
         def get_difference(message):
             idx: int = message.from_user.id
             prices = self.clients[idx].get_pair_difference()
-            text_message = self.generate_message_price_differ(prices)
+            text_message = self.generate_message_price_differ(prices, idx)
             self.api.send_message(idx, text_message)
 
         @self.api.message_handler(commands=['startpolling'])
@@ -114,20 +114,24 @@ class TelegramBot:
                 self.api.send_message(
                     idx, 'Только админ может запустить проверки')
 
-        @self.api.message_handler(commands=['test'])
-        def send_test(message):
+        def handle_add_moder(message: Message):
             idx: int = message.from_user.id
-            self.api.send_message(idx, 'тестик')
+
+        @self.api.message_handler(commands=['addmoder'])
+        def add_moder(message):
+            idx: int = message.from_user.id
+            self.api.send_message(idx, 'Введите id нового модератора')
+            self.api.register_next_step_handler(message, handle_bounds)
             figi: str | None = self.clients[idx].get_figi_for_ticker('SiH3')
             futures = self.clients[idx].get_last_price(figi)
             print(futures)
 
-    def generate_message_price_differ(self, prices: List[float] | None) -> str:
+    def generate_message_price_differ(self, prices: List[float] | None, idx: int) -> str:
         if prices is not None:
             if prices[2] >= 0:
-                text_message = f'SiH3 - {prices[0]}\nUSDRUBF - {prices[1]}\n\nSiH3 дороже USDRUBF на {prices[2]:.2f}%'
+                text_message = f'{self.clients[idx].pair[0]} - {prices[0]}\n{self.clients[idx].pair[1]} - {prices[1]}\n\n{self.clients[idx].pair[0]} дороже {self.clients[idx].pair[1]} на {prices[2]:.2f}%'
             else:
-                text_message = f'SiH3 - {prices[0]}\nUSDRUBF - {prices[1]}\n\nSiH3 дешевле USDRUBF на {-prices[2]:.2f}%'
+                text_message = f'{self.clients[idx].pair[0]} - {prices[0]}\n{self.clients[idx].pair[1]} - {prices[1]}\n\n{self.clients[idx].pair[0]} дешевле {self.clients[idx].pair[1]} на {-prices[2]:.2f}%'
         else:
             raise exceptions.NoPrices()
         return text_message
@@ -138,7 +142,7 @@ class TelegramBot:
             for client in self.clients.values():
                 if client.checking:
                     self.api.send_message(
-                        client.client_id, self.generate_message_price_differ(prices))
+                        client.client_id, self.generate_message_price_differ(prices, idx))
 
     def run(self):
         self.api.polling()
