@@ -1,8 +1,9 @@
 from telebot import ExceptionHandler
+from telegram_logger_bot import TelegramLoggerBot
 
 
 class MyExceptionHandler(ExceptionHandler):
-    def __init__(self, admin_id, logger):
+    def __init__(self, admin_id: int, logger: TelegramLoggerBot):
         self.admin_id = admin_id
         self.logger = logger
         super().__init__()
@@ -14,42 +15,50 @@ class MyExceptionHandler(ExceptionHandler):
 
 
 class NoEnvironmentVariable(Exception):
-    def __init__(self, message='No environment variable'):
+    def __init__(self, message: str = 'No environment variable'):
         self.message = message
         super().__init__(self.message)
 
 
 class NoTinkoffTokenException(Exception):
-    def __init__(self, message='No tinkoff token'):
+    def __init__(self, message: str = 'No tinkoff token'):
         self.message = message
         super().__init__(self.message)
 
 
 class WrongNumberOfArgs(Exception):
-    def __init__(self, message='Wrong number of args'):
+    def __init__(self, message: str = 'Wrong number of args'):
         self.message = message
         super().__init__(self.message)
 
 
 class NoPrices(Exception):
-    def __init__(self, message='No prices'):
+    def __init__(self, message: str = 'No prices'):
         self.message = message
         super().__init__(self.message)
 
 
 class NoInstrumentId(Exception):
-    def __init__(self, message='No instrument id'):
+    def __init__(self, message: str = 'No instrument id'):
         self.message = message
         super().__init__(self.message)
 
 
 class NoFuturesMargin(Exception):
-    def __init__(self, message='No futures margin'):
+    def __init__(self, message: str = 'No futures margin'):
         self.message = message
         super().__init__(self.message)
 
 
 class PairIsNotSet(Exception):
-    def __init__(self, message='Pair is not set'):
+    def __init__(self, message: str = 'Pair is not set'):
         self.message = message
+        super().__init__(self.message)
+
+
+class NoTicker(Exception):
+    def __init__(self, message: str = 'There is no such ticker', ticker: str | None = None):
+        self.message = message
+        if ticker is not None:
+            self.message += f' as {ticker}'
         super().__init__(self.message)
