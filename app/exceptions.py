@@ -60,5 +60,5 @@ class NoTicker(Exception):
     def __init__(self, message: str = 'There is no such ticker', ticker: str | None = None):
         self.message = message
         if ticker is not None:
-            self.message += f' as {ticker}'
+            self.message += f'\nThere is no \'{ticker}\''
         super().__init__(self.message)

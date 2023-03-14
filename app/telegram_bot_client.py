@@ -62,8 +62,10 @@ class TelegramBotClient:
                         )
                 tickers_df = DataFrame(tickers)
                 ticker_df = tickers_df[tickers_df["ticker"] == ticker]
+                if ticker_df.empty:
+                    raise exceptions.NoTicker(
+                        'Can\'t get figi for ticker', ticker)
                 figi = ticker_df["figi"].iloc[0]
-                print(ticker_df.iloc[0])
             return figi
         else:
             raise exceptions.NoTinkoffTokenException(
