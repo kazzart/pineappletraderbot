@@ -144,14 +144,24 @@ class TelegramBot:
             self.api.send_message(idx, 'Введите id нового модератора')
             self.api.register_next_step_handler(message, handle_add_moder)
 
+        def handle_remove_moder(message: Message):
+            idx: int = message.from_user.id
+            if message.text is not None and int(message.text) in self.clients:
+                self.clients[int(message.text)].role = Role.USER
+                self.clients[int(message.text)].tinkoff_token = None
+                self.api.send_message(
+                    int(message.text), 'Вы больше не модератор')
+                self.api.send_message(
+                    idx, f'Пользователь с id \'{int(message.text)}\' теперь модератор')
+
+            else:
+                self.api.send_message(idx, 'Не вышло удалить модератора')
+
         @self.api.message_handler(commands=['removemoder'])
         def remove_moder(message):
             idx: int = message.from_user.id
             self.api.send_message(idx, 'Введите id модератора для удаления')
-            self.api.register_next_step_handler(message, handle_add_moder)
-            figi: str | None = self.clients[idx].get_figi_for_ticker('SiH3')
-            futures = self.clients[idx].get_last_price(figi)
-            print(futures)
+            self.api.register_next_step_handler(message, handle_remove_moder)
 
     def generate_message_price_differ(self, prices: List[float] | None, idx: int) -> str:
         if prices is not None:
