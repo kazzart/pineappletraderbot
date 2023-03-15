@@ -116,6 +116,8 @@ class TelegramBot:
 
         def handle_set_tinkoff_token(message: Message, idx: int, admin_idx: int):
             self.clients[idx].tinkoff_token = message.text
+            self.clients[idx].role = Role.MODERATOR
+            self.clients[idx].get_accounts()
             self.api.send_message(
                 idx, 'Поздравляю с получением роли модератора')
             self.api.send_message(
@@ -140,6 +142,12 @@ class TelegramBot:
         def add_moder(message):
             idx: int = message.from_user.id
             self.api.send_message(idx, 'Введите id нового модератора')
+            self.api.register_next_step_handler(message, handle_add_moder)
+
+        @self.api.message_handler(commands=['removemoder'])
+        def remove_moder(message):
+            idx: int = message.from_user.id
+            self.api.send_message(idx, 'Введите id модератора для удаления')
             self.api.register_next_step_handler(message, handle_add_moder)
             figi: str | None = self.clients[idx].get_figi_for_ticker('SiH3')
             futures = self.clients[idx].get_last_price(figi)

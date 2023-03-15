@@ -33,7 +33,7 @@ class TelegramBotClient:
 
     def get_accounts(self) -> None:
         if self.tinkoff_token is not None:
-            with Client(self.tinkoff_token, target=INVEST_GRPC_API_SANDBOX) as client:
+            with Client(self.tinkoff_token) as client:
                 print(client.users.get_accounts())
         else:
             raise exceptions.NoTinkoffTokenException('Can\'t get accounts')
