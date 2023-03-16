@@ -18,6 +18,8 @@ class TelegramBotClient:
     tinkoff_token: str | None
     pair: List[str]
     bounds: List[float]
+    pair_set: bool
+    bounds_set: bool
     checking: bool
 
     def __init__(self, client_id: int, role: Role = Role.USER, tinkoff_token: str | None = None):
@@ -25,6 +27,8 @@ class TelegramBotClient:
         self.role = role
         self.pair = ['', '']
         self.bounds = [-1, 1]
+        self.pair_set = False
+        self.bounds_set = False
         self.checking = False
         if self.role == Role.ADMIN or self.role == Role.MODERATOR:
             self.tinkoff_token = tinkoff_token
@@ -134,18 +138,20 @@ class TelegramBotClient:
     def set_pair(self, tickers: List[str] | None) -> None:
         if tickers is not None:
             self.pair = [tickers[0], tickers[1]]
+            self.pair_set = True
         else:
             raise exceptions.NoTicker('Can\'t set pair')
 
     def set_bounds(self, first_bound: float, second_bound: float) -> None:
         self.bounds = [min(first_bound, second_bound),
                        max(first_bound, second_bound)]
+        self.bounds_set = True
 
     def check_bounds(self, perc_diff: float) -> bool:
         return perc_diff >= self.bounds[0] or perc_diff <= self.bounds[1]
 
     def get_pair_difference(self) -> List[float]:
-        if all(self.pair):
+        if self.pair_set:
             first_figi = self.get_figi_for_ticker(self.pair[0])
             second_figi = self.get_figi_for_ticker(self.pair[1])
             first_price_of_asset = self.get_last_price(first_figi)
