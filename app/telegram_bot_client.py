@@ -8,7 +8,7 @@ from tinkoff.invest.services import InstrumentsService
 
 from tinkoff.invest.sandbox.client import SandboxClient
 
-from enums import Role
+from enums import Role, Mode
 import exceptions
 
 
@@ -21,6 +21,7 @@ class TelegramBotClient:
     pair_set: bool
     bounds_set: bool
     checking: bool
+    checking_mode: Mode
 
     def __init__(self, client_id: int, role: Role = Role.USER, tinkoff_token: str | None = None):
         self.client_id = client_id
@@ -30,6 +31,7 @@ class TelegramBotClient:
         self.pair_set = False
         self.bounds_set = False
         self.checking = False
+        self.checking_mode = Mode.ANY
         if self.role == Role.ADMIN or self.role == Role.MODERATOR:
             self.tinkoff_token = tinkoff_token
         else:
@@ -148,7 +150,7 @@ class TelegramBotClient:
         self.bounds_set = True
 
     def check_bounds(self, perc_diff: float) -> bool:
-        return perc_diff >= self.bounds[0] or perc_diff <= self.bounds[1]
+        return (perc_diff <= self.bounds[0] and (self.checking_mode == Mode.LEFT or self.checking_mode == Mode.ANY)) or (perc_diff >= self.bounds[1] and (self.checking_mode == Mode.RIGHT or self.checking_mode == Mode.ANY))
 
     def get_pair_difference(self) -> List[float]:
         if self.pair_set:
