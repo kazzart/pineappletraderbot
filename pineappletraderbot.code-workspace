@@ -1,0 +1,18 @@
+{
+  "folders": [
+	{
+		"path": "."
+	},
+	{
+		"name": "SSH FS - myplaceserver",
+		"uri": "ssh://myplaceserver/"
+	},
+	{
+		"name": "SSH FS - miniserver",
+		"uri": "ssh://miniserver/"
+	}
+],
+  "settings": {
+    "powershell.cwd": "c:\\Local Projects\\pineappletraderbot"
+  }
+}

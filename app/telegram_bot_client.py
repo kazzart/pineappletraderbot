@@ -8,7 +8,7 @@ from tinkoff.invest.services import InstrumentsService
 
 from tinkoff.invest.sandbox.client import SandboxClient
 
-from enums import Role
+from enums import Role, Mode
 import exceptions
 
 
@@ -18,14 +18,20 @@ class TelegramBotClient:
     tinkoff_token: str | None
     pair: List[str]
     bounds: List[float]
+    pair_set: bool
+    bounds_set: bool
     checking: bool
+    checking_mode: Mode
 
     def __init__(self, client_id: int, role: Role = Role.USER, tinkoff_token: str | None = None):
         self.client_id = client_id
         self.role = role
         self.pair = ['', '']
         self.bounds = [-1, 1]
+        self.pair_set = False
+        self.bounds_set = False
         self.checking = False
+        self.checking_mode = Mode.ANY
         if self.role == Role.ADMIN or self.role == Role.MODERATOR:
             self.tinkoff_token = tinkoff_token
         else:
@@ -33,7 +39,7 @@ class TelegramBotClient:
 
     def get_accounts(self) -> None:
         if self.tinkoff_token is not None:
-            with Client(self.tinkoff_token, target=INVEST_GRPC_API_SANDBOX) as client:
+            with Client(self.tinkoff_token) as client:
                 print(client.users.get_accounts())
         else:
             raise exceptions.NoTinkoffTokenException('Can\'t get accounts')
@@ -134,18 +140,20 @@ class TelegramBotClient:
     def set_pair(self, tickers: List[str] | None) -> None:
         if tickers is not None:
             self.pair = [tickers[0], tickers[1]]
+            self.pair_set = True
         else:
             raise exceptions.NoTicker('Can\'t set pair')
 
     def set_bounds(self, first_bound: float, second_bound: float) -> None:
         self.bounds = [min(first_bound, second_bound),
                        max(first_bound, second_bound)]
+        self.bounds_set = True
 
     def check_bounds(self, perc_diff: float) -> bool:
-        return perc_diff >= self.bounds[0] or perc_diff <= self.bounds[1]
+        return (perc_diff <= self.bounds[0] and (self.checking_mode == Mode.LEFT or self.checking_mode == Mode.ANY)) or (perc_diff >= self.bounds[1] and (self.checking_mode == Mode.RIGHT or self.checking_mode == Mode.ANY))
 
     def get_pair_difference(self) -> List[float]:
-        if all(self.pair):
+        if self.pair_set:
             first_figi = self.get_figi_for_ticker(self.pair[0])
             second_figi = self.get_figi_for_ticker(self.pair[1])
             first_price_of_asset = self.get_last_price(first_figi)
