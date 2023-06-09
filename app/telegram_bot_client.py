@@ -23,10 +23,12 @@ class TelegramBotClient:
     checking: bool
     checking_mode: Mode
 
-    def __init__(self, client_id: int, role: Role = Role.USER, tinkoff_token: str | None = None):
+    def __init__(
+        self, client_id: int, role: Role = Role.USER, tinkoff_token: str | None = None
+    ):
         self.client_id = client_id
         self.role = role
-        self.pair = ['', '']
+        self.pair = ["", ""]
         self.bounds = [-1, 1]
         self.pair_set = False
         self.bounds_set = False
@@ -42,14 +44,14 @@ class TelegramBotClient:
             with Client(self.tinkoff_token) as client:
                 print(client.users.get_accounts())
         else:
-            raise exceptions.NoTinkoffTokenException('Can\'t get accounts')
+            raise exceptions.NoTinkoffTokenException("Can't get accounts")
 
     def get_sandbox_info(self) -> None:
         if self.tinkoff_token is not None:
             with SandboxClient(self.tinkoff_token) as client:
                 print(client.users.get_info())
         else:
-            raise exceptions.NoTinkoffTokenException('Can\'t get info')
+            raise exceptions.NoTinkoffTokenException("Can't get info")
 
     def get_figi_for_ticker(self, ticker: str) -> str:
         if self.tinkoff_token is not None:
@@ -63,36 +65,46 @@ class TelegramBotClient:
                                 "name": item.name,
                                 "ticker": item.ticker,
                                 "class_code": item.class_code,
-                                "figi": item.figi
+                                "figi": item.figi,
                             }
                         )
                 tickers_df = DataFrame(tickers)
                 ticker_df = tickers_df[tickers_df["ticker"] == ticker]
                 if ticker_df.empty:
-                    raise exceptions.NoTicker(
-                        'Can\'t get figi for ticker', ticker)
+                    raise exceptions.NoTicker("Can't get figi for ticker", ticker)
                 figi = ticker_df["figi"].iloc[0]
             return figi
         else:
             raise exceptions.NoTinkoffTokenException(
-                f'Can\'t get figi by ticker {ticker}')
+                f"Can't get figi by ticker {ticker}"
+            )
 
     def get_last_price(self, instrument_id: str | None) -> float:
         if self.tinkoff_token is not None and instrument_id is not None:
             with Client(self.tinkoff_token) as client:
-                instrument_price = client.market_data.get_last_prices(
-                    figi=[instrument_id]).last_prices[0].price
-                instrument_price = instrument_price.units + \
-                    (instrument_price.nano / 1000000000)
-                print('\n\n', client.market_data.get_last_prices(
-                    figi=[instrument_id]), '\n\n\n')
-                print('\n\n', client.market_data.get_trading_status(
-                    figi=instrument_id), '\n\n')
+                instrument_price = (
+                    client.market_data.get_last_prices(figi=[instrument_id])
+                    .last_prices[0]
+                    .price
+                )
+                instrument_price = instrument_price.units + (
+                    instrument_price.nano / 1000000000
+                )
+                print(
+                    "\n\n",
+                    client.market_data.get_last_prices(figi=[instrument_id]),
+                    "\n\n\n",
+                )
+                print(
+                    "\n\n",
+                    client.market_data.get_trading_status(figi=instrument_id),
+                    "\n\n",
+                )
             return instrument_price
         elif self.tinkoff_token is None:
-            raise exceptions.NoTinkoffTokenException('Can\'t get last prices')
+            raise exceptions.NoTinkoffTokenException("Can't get last prices")
         else:
-            raise exceptions.NoInstrumentId('Can\'t get last prices')
+            raise exceptions.NoInstrumentId("Can't get last prices")
 
     def get_basic_asset_size(self, figi: str) -> float:
         if self.tinkoff_token is not None:
@@ -107,50 +119,64 @@ class TelegramBotClient:
                             "ticker": item.ticker,
                             "class_code": item.class_code,
                             "figi": item.figi,
-                            "basic_asset_size": item.basic_asset_size
+                            "basic_asset_size": item.basic_asset_size,
                         }
                     )
                 tickers_df = DataFrame(tickers)
                 ticker_df = tickers_df[tickers_df["figi"] == figi]
                 basic_asset_size = ticker_df["basic_asset_size"].iloc[0]
-                basic_asset_size = basic_asset_size.units + \
-                    (basic_asset_size.nano / 1000000000)
+                basic_asset_size = basic_asset_size.units + (
+                    basic_asset_size.nano / 1000000000
+                )
 
-                futures_margin = client.instruments.get_futures_margin(
-                    figi=figi)
+                futures_margin = client.instruments.get_futures_margin(figi=figi)
                 if futures_margin is not None:
                     min_price_increment = futures_margin.min_price_increment
-                    min_price_increment = min_price_increment.units + \
-                        (min_price_increment.nano / 1000000000)
-                    min_price_increment_amount = futures_margin.min_price_increment_amount
-                    min_price_increment_amount = min_price_increment_amount.units + \
-                        (min_price_increment_amount.nano / 1000000000)
-                    print('min_price_increment = ', min_price_increment,
-                          '\nmin_price_increment_amount = ', min_price_increment_amount)
-                    basic_asset_size = basic_asset_size * \
-                        min_price_increment / min_price_increment_amount
+                    min_price_increment = min_price_increment.units + (
+                        min_price_increment.nano / 1000000000
+                    )
+                    min_price_increment_amount = (
+                        futures_margin.min_price_increment_amount
+                    )
+                    min_price_increment_amount = min_price_increment_amount.units + (
+                        min_price_increment_amount.nano / 1000000000
+                    )
+                    print(
+                        "min_price_increment = ",
+                        min_price_increment,
+                        "\nmin_price_increment_amount = ",
+                        min_price_increment_amount,
+                    )
+                    basic_asset_size = (
+                        basic_asset_size
+                        * min_price_increment
+                        / min_price_increment_amount
+                    )
                     return basic_asset_size
                 else:
-                    raise exceptions.NoFuturesMargin(
-                        'Can\'t get basic asset size')
+                    raise exceptions.NoFuturesMargin("Can't get basic asset size")
         else:
-            raise exceptions.NoTinkoffTokenException(
-                'Can\'t get basic asset size')
+            raise exceptions.NoTinkoffTokenException("Can't get basic asset size")
 
     def set_pair(self, tickers: List[str] | None) -> None:
         if tickers is not None:
             self.pair = [tickers[0], tickers[1]]
             self.pair_set = True
         else:
-            raise exceptions.NoTicker('Can\'t set pair')
+            raise exceptions.NoTicker("Can't set pair")
 
     def set_bounds(self, first_bound: float, second_bound: float) -> None:
-        self.bounds = [min(first_bound, second_bound),
-                       max(first_bound, second_bound)]
+        self.bounds = [min(first_bound, second_bound), max(first_bound, second_bound)]
         self.bounds_set = True
 
     def check_bounds(self, perc_diff: float) -> bool:
-        return (perc_diff <= self.bounds[0] and (self.checking_mode == Mode.LEFT or self.checking_mode == Mode.ANY)) or (perc_diff >= self.bounds[1] and (self.checking_mode == Mode.RIGHT or self.checking_mode == Mode.ANY))
+        return (
+            perc_diff <= self.bounds[0]
+            and (self.checking_mode == Mode.LEFT or self.checking_mode == Mode.ANY)
+        ) or (
+            perc_diff >= self.bounds[1]
+            and (self.checking_mode == Mode.RIGHT or self.checking_mode == Mode.ANY)
+        )
 
     def get_pair_difference(self) -> List[float]:
         if self.pair_set:
@@ -160,11 +186,13 @@ class TelegramBotClient:
             second_price_of_asset = self.get_last_price(second_figi)
             first_basic_asset_size = self.get_basic_asset_size(first_figi)
             second_basic_asset_size = self.get_basic_asset_size(second_figi)
-            price = [first_price_of_asset / first_basic_asset_size,
-                     second_price_of_asset / second_basic_asset_size]
+            price = [
+                first_price_of_asset / first_basic_asset_size,
+                second_price_of_asset / second_basic_asset_size,
+            ]
             print(price)
             perc_diff = price[0] / price[1] * 100 - 100
 
             return [*price, perc_diff]
         else:
-            raise exceptions.PairIsNotSet('Can\'t get pair difference')
+            raise exceptions.PairIsNotSet("Can't get pair difference")
